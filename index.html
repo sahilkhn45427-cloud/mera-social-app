@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>मेरा सोशल ऐप</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --blue: #1877f2; --bg: #f0f2f5; --text: #1c1e21;
+      --muted: #65676b; --line: #e4e6eb;
+    }
+    body { margin:0; background:var(--bg); color:var(--text); font-family:Arial,sans-serif; }
+    header {
+      position:sticky; top:0; z-index:10; display:flex; align-items:center;
+      justify-content:space-between; gap:12px; padding:13px 16px;
+      background:linear-gradient(135deg,#0866ff,#1877f2); color:#fff;
+      box-shadow:0 2px 8px #0002;
+    }
+    .brand { font-size:25px; font-weight:800; letter-spacing:-.5px; }
+    .header-note { font-size:12px; opacity:.95; }
+    main { width:min(100%,620px); margin:16px auto; padding:0 10px 30px; }
+    .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:15px; margin-bottom:14px; box-shadow:0 2px 8px #0000000d; }
+    .section-title { font-size:17px; font-weight:700; margin:0 0 12px; }
+    .profile-row,.feed-head { display:flex; align-items:center; gap:10px; }
+    .avatar { width:52px; height:52px; border-radius:50%; object-fit:cover; background:#dbeafe; border:2px solid #e7f0ff; flex:0 0 auto; }
+    .small-avatar { width:42px; height:42px; }
+    .muted { color:var(--muted); font-size:13px; }
+    input,textarea { width:100%; font:inherit; font-size:15px; padding:12px; border:1px solid #ccd0d5; border-radius:10px; background:#fff; color:var(--text); outline:none; }
+    input:focus,textarea:focus { border-color:var(--blue); box-shadow:0 0 0 2px #1877f21a; }
+    textarea { resize:vertical; min-height:92px; margin-top:12px; }
+    .field { margin-top:10px; }
+    .field label { display:block; margin-bottom:6px; font-size:13px; font-weight:700; }
+    .btn { border:0; border-radius:9px; padding:10px 14px; font-size:14px; font-weight:700; cursor:pointer; }
+    .btn:active { transform:scale(.98); }
+    .btn-primary { color:#fff; background:var(--blue); }
+    .btn-light { color:#3a3b3c; background:#e4e6eb; }
+    .btn-danger { color:#b42318; background:#fee4e2; }
+    .btn-full { width:100%; margin-top:12px; }
+    .button-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .feed-name { font-weight:700; }
+    .feed-time { color:var(--muted); font-size:12px; margin-top:3px; }
+    .post-text { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.5; margin:14px 0; }
+    .post-photo { display:block; width:100%; max-height:520px; object-fit:contain; border-radius:10px; background:#f7f8fa; }
+    .post-stats { display:flex; justify-content:space-between; gap:10px; color:var(--muted); font-size:13px; padding:10px 0; }
+    .post-actions { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; border-top:1px solid var(--line); padding-top:9px; }
+    .action-btn { background:transparent; color:#606770; padding:10px 4px; }
+    .action-btn.liked { color:var(--blue); }
+    .comments { border-top:1px solid var(--line); margin-top:10px; padding-top:10px; }
+    .comment { background:#f0f2f5; border-radius:12px; padding:9px 12px; margin-top:8px; overflow-wrap:anywhere; }
+    .comment-name { font-size:12px; font-weight:700; margin-bottom:3px; }
+    .comment-form { display:flex; gap:7px; margin-top:10px; }
+    .comment-form input { min-width:0; }
+    .empty { text-align:center; color:var(--muted); padding:24px 12px; }
+    .hidden { display:none !important; }
+    footer { text-align:center; color:var(--muted); font-size:12px; padding:12px; }
+
+    /* Stories row */
+    .stories-row { display:flex; gap:10px; overflow-x:auto; padding:2px 2px 8px; }
+    .story-tile {
+      flex:0 0 104px; height:158px; border:0; padding:0; overflow:hidden;
+      border-radius:14px; position:relative; cursor:pointer; color:#fff;
+      background:#dbeafe; box-shadow:0 2px 7px #0002; text-align:left;
+    }
+    .story-tile img { width:100%; height:100%; object-fit:cover; display:block; }
+    .story-tile::after { content:""; position:absolute; inset:0; background:linear-gradient(transparent 40%,#0009); pointer-events:none; }
+    .story-owner { position:absolute; z-index:1; left:8px; bottom:9px; font-size:12px; font-weight:bold; text-shadow:0 1px 3px #000; overflow-wrap:anywhere; }
+    .story-avatar { position:absolute; z-index:2; top:8px; left:8px; width:34px; height:34px; border:3px solid #1877f2; border-radius:50%; object-fit:cover; background:#fff; }
+    .add-story { background:linear-gradient(160deg,#fff,#dbeafe); color:#1c1e21; }
+    .add-story::after { background:linear-gradient(transparent 55%,#0001); }
+    .add-story .story-avatar { top:auto; bottom:39px; left:50%; transform:translateX(-50%); border:0; width:40px; height:40px; }
+    .add-plus { position:absolute; z-index:3; left:50%; bottom:57px; transform:translateX(-50%); background:#1877f2; border:3px solid #fff; border-radius:50%; width:30px; height:30px; display:grid; place-items:center; font-size:22px; line-height:1; }
+    .add-label { position:absolute; z-index:2; bottom:10px; left:0; right:0; text-align:center; font-size:12px; font-weight:bold; }
+    .story-ring { position:absolute; z-index:2; top:6px; left:6px; width:38px; height:38px; border:3px solid #1877f2; border-radius:50%; pointer-events:none; }
+    .story-hint { font-size:12px; color:var(--muted); margin-top:6px; }
+
+    /* Story viewer */
+    .story-viewer { position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; padding:12px; background:#101114f2; }
+    .story-stage { position:relative; width:min(100%,420px); height:min(86dvh,760px); min-height:420px; border-radius:16px; overflow:hidden; background:#222; color:white; box-shadow:0 8px 40px #0008; }
+    .story-stage-bg { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:#202124; }
+    .story-stage-shade { position:absolute; inset:0; background:linear-gradient(#0009,transparent 25%,transparent 65%,#0007); pointer-events:none; }
+    .story-progress { position:absolute; z-index:3; top:10px; left:10px; right:10px; height:3px; background:#ffffff66; border-radius:4px; }
+    .story-progress-fill { height:100%; width:100%; background:#fff; transform-origin:left; }
+    .story-top { position:absolute; z-index:4; top:22px; left:12px; right:46px; display:flex; align-items:center; gap:9px; }
+    .story-top img { width:38px; height:38px; object-fit:cover; border-radius:50%; border:2px solid #fff; }
+    .story-top-name { font-size:14px; font-weight:bold; text-shadow:0 1px 3px #000; }
+    .story-top-time { font-size:11px; opacity:.9; margin-top:3px; }
+    .story-close { position:absolute; z-index:5; top:17px; right:12px; border:0; background:#0006; color:#fff; width:36px; height:36px; border-radius:50%; font-size:24px; cursor:pointer; }
+    .story-caption { position:absolute; z-index:4; left:18px; right:18px; bottom:28px; text-align:center; font-size:20px; font-weight:bold; overflow-wrap:anywhere; text-shadow:0 1px 4px #000; }
+    .story-nav { position:absolute; z-index:4; inset:65px 0 70px; display:flex; }
+    .story-nav button { flex:1; border:0; background:transparent; }
+    @media(max-width:420px) {
+      .brand { font-size:22px; } header { padding:12px; } .card { padding:12px; }
+      .post-actions { gap:0; } .action-btn { font-size:12px; }
+      .story-stage { height:88dvh; min-height:380px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <div class="brand">मेरा सोशल ऐप</div>
+      <div class="header-note">दोस्तों से जुड़ें, बातें साझा करें</div>
+    </div>
+    <div aria-hidden="true" style="font-size:26px">🌐</div>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2 class="section-title">आपकी प्रोफ़ाइल</h2>
+      <div class="profile-row">
+        <img id="profilePreview" class="avatar" alt="प्रोफ़ाइल फोटो"
+          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='50' fill='%23dbeafe'/%3E%3Ccircle cx='50' cy='37' r='19' fill='%236b9fe8'/%3E%3Cpath d='M16 94c3-22 16-33 34-33s31 11 34 33' fill='%236b9fe8'/%3E%3C/svg%3E">
+        <div style="flex:1;min-width:0">
+          <div id="profileName" style="font-weight:700">आपका नाम</div>
+          <div class="muted">आपकी प्रोफ़ाइल (डेमो)</div>
+        </div>
+      </div>
+      <div class="field"><label for="nameInput">अपना नाम</label><input id="nameInput" maxlength="40" placeholder="अपना नाम लिखें"></div>
+      <div class="field"><label for="profileFile">प्रोफ़ाइल फोटो चुनें (वैकल्पिक)</label><input id="profileFile" type="file" accept="image/*"></div>
+      <button id="saveProfile" class="btn btn-primary btn-full">प्रोफ़ाइल अपडेट करें</button>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">Stories</h2>
+      <div id="storiesRow" class="stories-row">
+        <button id="addStoryTile" class="story-tile add-story" type="button" aria-label="नई स्टोरी जोड़ें">
+          <img id="addStoryAvatar" class="story-avatar" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' rx='50' fill='%23dbeafe'/%3E%3Ccircle cx='50' cy='37' r='19' fill='%236b9fe8'/%3E%3Cpath d='M16 94c3-22 16-33 34-33s31 11 34 33' fill='%236b9fe8'/%3E%3C/svg%3E">
+          <span class="add-plus">+</span><span class="add-label">स्टोरी बनाएँ</span>
+        </button>
+      </div>
+      <div class="story-hint">फोटो या टेक्स्ट वाली स्टोरी जोड़ें। यह डेमो स्टोरी 24 घंटे बाद अपने-आप नहीं मिटती।</div>
+      <input id="storyFile" class="hidden" type="file" accept="image/*">
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">नई पोस्ट बनाएँ</h2>
+      <div class="profile-row">
+        <img id="composerAvatar" class="avatar small-avatar" alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='50' fill='%23dbeafe'/%3E%3Ccircle cx='50' cy='37' r='19' fill='%236b9fe8'/%3E%3Cpath d='M16 94c3-22 16-33 34-33s31 11 34 33' fill='%236b9fe8'/%3E%3C/svg%3E">
+        <div style="font-weight:700">आपके मन में क्या है?</div>
+      </div>
+      <textarea id="postText" maxlength="2000" placeholder="कुछ लिखिए..."></textarea>
+      <div class="field"><label for="postFile">फोटो जोड़ें (वैकल्पिक)</label><input id="postFile" type="file" accept="image/*"></div>
+      <button id="publishPost" class="btn btn-primary btn-full">पोस्ट करें</button>
+    </section>
+
+    <section>
+      <h2 class="section-title" style="padding:0 4px">न्यूज़ फ़ीड</h2>
+      <div id="feed"><div id="emptyState" class="card empty">अभी कोई पोस्ट नहीं है। अपनी पहली पोस्ट लिखें! 😊</div></div>
+    </section>
+    <footer>यह डेमो आपकी पोस्ट, प्रोफ़ाइल और स्टोरी इसी मोबाइल के ब्राउज़र में सेव करता है। ब्राउज़र का डेटा मिटाने पर सेव सामग्री हट सकती है।</footer>
+  </main>
+
+  <div id="storyViewer" class="story-viewer hidden" role="dialog" aria-modal="true" aria-label="स्टोरी">
+    <div class="story-stage">
+      <img id="storyStageImage" class="story-stage-bg hidden" alt="">
+      <div class="story-stage-shade"></div>
+      <div class="story-progress"><div id="storyProgressFill" class="story-progress-fill"></div></div>
+      <div class="story-top">
+        <img id="storyStageAvatar" alt="">
+        <div><div id="storyStageName" class="story-top-name"></div><div id="storyStageTime" class="story-top-time">अभी-अभी</div></div>
+      </div>
+      <button id="closeStory" class="story-close" aria-label="स्टोरी बंद करें">×</button>
+      <div id="storyStageCaption" class="story-caption"></div>
+      <div class="story-nav">
+        <button id="storyPrev" aria-label="पिछली स्टोरी"></button>
+        <button id="storyNext" aria-label="अगली स्टोरी"></button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let profileName = 'आपका नाम';
+    let profileImageUrl = '';
+    let nextPostId = 1;
+    let nextStoryId = 1;
+    let stories = [];
+    let currentStoryIndex = 0;
+    const STORAGE_KEY = 'meraSocialApp_v1';
+
+    function saveApp() {
+      try {
+        const posts = Array.from($('feed').querySelectorAll('article')).map(post => post.outerHTML);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ profileName, profileImageUrl, stories, nextPostId, nextStoryId, posts }));
+      } catch (error) {
+        alert('सेव नहीं हो पाया। फोटो का आकार छोटा करके फिर कोशिश करें।');
+      }
+    }
+
+    function restoreApp() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        profileName = data.profileName || 'आपका नाम';
+        profileImageUrl = data.profileImageUrl || '';
+        stories = Array.isArray(data.stories) ? data.stories : [];
+        nextPostId = Number(data.nextPostId) || 1;
+        nextStoryId = Number(data.nextStoryId) || 1;
+        $('nameInput').value = profileName === 'आपका नाम' ? '' : profileName;
+        $('profileName').textContent = profileName;
+        $('profilePreview').src = currentAvatar();
+        $('composerAvatar').src = currentAvatar();
+        $('addStoryAvatar').src = currentAvatar();
+        renderStories();
+        if (Array.isArray(data.posts) && data.posts.length) {
+          $('emptyState').classList.add('hidden');
+          data.posts.forEach(html => {
+            const holder = document.createElement('div'); holder.innerHTML = html;
+            const post = holder.firstElementChild; if (!post) return;
+            $('feed').appendChild(post);
+            bindRestoredPost(post);
+          });
+        }
+      } catch (error) { console.warn('Saved data could not be restored.', error); }
+    }
+
+    function bindRestoredPost(post) {
+      const likeBtn = post.querySelector('.post-actions button:nth-child(1)');
+      if (likeBtn) likeBtn.addEventListener('click', () => {
+        const count = post.querySelector('.like-count');
+        const liked = likeBtn.classList.toggle('liked');
+        count.textContent = Math.max(0, Number(count.textContent) + (liked ? 1 : -1));
+        likeBtn.textContent = liked ? '👍 Liked' : '👍 Like'; saveApp();
+      });
+      const commentBtn = post.querySelector('.post-actions button:nth-child(2)');
+      const commentArea = post.querySelector('.comments');
+      if (commentBtn && commentArea) commentBtn.addEventListener('click', () => { commentArea.classList.toggle('hidden'); });
+      const form = post.querySelector('.comment-form');
+      if (form) form.addEventListener('submit', event => {
+        event.preventDefault(); const input = form.querySelector('input'); const value = input.value.trim(); if (!value) return;
+        const wrap = document.createElement('div'); wrap.className = 'comment';
+        const name = document.createElement('div'); name.className = 'comment-name'; name.textContent = profileName;
+        const body = document.createElement('div'); body.textContent = value; wrap.append(name, body);
+        post.querySelector('.comment-list').appendChild(wrap);
+        const count = post.querySelector('.comment-count'); count.textContent = Number(count.textContent) + 1; input.value=''; saveApp();
+      });
+      const shareBtn = post.querySelector('.post-actions button:nth-child(3)');
+      if (shareBtn) shareBtn.addEventListener('click', async () => { const body = post.querySelector('.post-text'); const shareText = `${profileName} की पोस्ट: ${body ? body.textContent : 'फोटो'}`; try { if (navigator.share) await navigator.share({title:'मेरा सोशल ऐप',text:shareText}); else { await navigator.clipboard.writeText(shareText); alert('पोस्ट का टेक्स्ट कॉपी हो गया।'); } } catch (_) {} });
+      const deleteBtn = post.querySelector('.button-row button');
+      if (deleteBtn) deleteBtn.addEventListener('click', () => { if (confirm('क्या आप यह पोस्ट हटाना चाहते हैं?')) { post.remove(); if (!$('feed').querySelector('article')) $('emptyState').classList.remove('hidden'); saveApp(); } });
+    }
+
+    function readImage(file) {
+      return new Promise((resolve, reject) => {
+        if (!file) return resolve('');
+        if (!file.type.startsWith('image/')) return reject(new Error('कृपया इमेज फ़ाइल चुनें।'));
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('फोटो पढ़ी नहीं जा सकी।'));
+        reader.readAsDataURL(file);
+      });
+    }
+    function makeAvatar(name) {
+      const initial = (name || 'म').trim().charAt(0) || 'म';
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" rx="50" fill="#dbeafe"/><text x="50" y="62" font-size="48" text-anchor="middle" fill="#1877f2" font-family="Arial">${initial.replace(/[<>&"]/g, '')}</text></svg>`;
+      return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    }
+    function currentAvatar() { return profileImageUrl || makeAvatar(profileName); }
+
+    $('saveProfile').addEventListener('click', async () => {
+      const typedName = $('nameInput').value.trim();
+      if (typedName) profileName = typedName;
+      try {
+        const file = $('profileFile').files[0];
+        if (file) profileImageUrl = await readImage(file);
+        $('profileName').textContent = profileName;
+        $('profilePreview').src = currentAvatar();
+        $('composerAvatar').src = currentAvatar();
+        $('addStoryAvatar').src = currentAvatar();
+        renderStories();
+        saveApp();
+        alert('प्रोफ़ाइल अपडेट हो गई!');
+      } catch (error) { alert(error.message || 'कुछ गड़बड़ हुई।'); }
+    });
+
+    function renderStories() {
+      const row = $('storiesRow');
+      row.querySelectorAll('.user-story').forEach(el => el.remove());
+      stories.forEach((story, index) => {
+        const tile = document.createElement('button');
+        tile.type = 'button'; tile.className = 'story-tile user-story';
+        tile.setAttribute('aria-label', story.name + ' की स्टोरी देखें');
+        if (story.image) {
+          const image = document.createElement('img');
+          image.src = story.image; image.alt = ''; tile.appendChild(image);
+        } else {
+          tile.style.background = story.color || 'linear-gradient(145deg,#1877f2,#7c4dff)';
+          const text = document.createElement('span');
+          text.style.cssText = 'position:absolute;inset:20px 8px 32px;display:grid;place-items:center;text-align:center;font-size:16px;font-weight:bold;overflow-wrap:anywhere;text-shadow:0 1px 3px #0005;';
+          text.textContent = story.caption || 'नमस्ते!';
+          tile.appendChild(text);
+        }
+        const avatar = document.createElement('img');
+        avatar.className = 'story-avatar'; avatar.src = story.avatar; avatar.alt = '';
+        tile.appendChild(avatar);
+        const ring = document.createElement('span'); ring.className = 'story-ring'; tile.appendChild(ring);
+        const owner = document.createElement('span'); owner.className = 'story-owner'; owner.textContent = story.name;
+        tile.appendChild(owner);
+        tile.addEventListener('click', () => openStory(index));
+        row.appendChild(tile);
+      });
+    }
+
+    async function createStory() {
+      // Use an in-page dialog instead of browser prompt/confirm, which can clip on some phones.
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:2000;background:#0009;display:flex;align-items:center;justify-content:center;padding:18px;';
+      const panel = document.createElement('div');
+      panel.style.cssText = 'background:#fff;color:#1c1e21;width:100%;max-width:420px;max-height:85vh;overflow:auto;border-radius:16px;padding:20px;box-shadow:0 8px 30px #0004;';
+      const title = document.createElement('h2'); title.textContent = 'नई स्टोरी बनाएँ';
+      title.style.cssText = 'margin:0 0 10px;font-size:22px;';
+      const help = document.createElement('p'); help.textContent = 'स्टोरी में क्या लिखना चाहते हैं?';
+      help.style.cssText = 'margin:0 0 10px;color:#65676b;font-size:15px;';
+      const caption = document.createElement('textarea'); caption.placeholder = 'यहाँ अपनी स्टोरी लिखें...'; caption.maxLength = 500;
+      caption.style.cssText = 'width:100%;min-height:110px;padding:12px;border:1px solid #ccd0d5;border-radius:10px;font:16px Arial,sans-serif;box-sizing:border-box;';
+      const buttons = document.createElement('div'); buttons.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;';
+      const makeButton = (label, color) => { const b=document.createElement('button'); b.type='button'; b.textContent=label; b.style.cssText=`flex:1;min-width:110px;padding:13px 10px;border:0;border-radius:9px;background:${color};color:${color==='#1877f2'?'white':'#1c1e21'};font-size:15px;font-weight:bold;`; return b; };
+      const cancel = makeButton('रद्द करें','#e4e6eb');
+      const next = makeButton('आगे बढ़ें','#1877f2');
+      buttons.append(cancel,next); panel.append(title,help,caption,buttons); overlay.append(panel); document.body.append(overlay);
+      cancel.addEventListener('click',()=>overlay.remove());
+      next.addEventListener('click',()=>{
+        const text=caption.value.trim();
+        if(!text){ help.textContent='कृपया पहले स्टोरी में कुछ लिखें।'; help.style.color='#b42318'; caption.focus(); return; }
+        help.textContent='क्या आप स्टोरी में फोटो भी जोड़ना चाहते हैं?'; help.style.color='#65676b';
+        caption.style.display='none';
+        const photoHelp=document.createElement('p'); photoHelp.textContent='फोटो चुनें या बिना फोटो के टेक्स्ट स्टोरी बनाएँ।'; photoHelp.style.cssText='font-size:15px;line-height:1.5;';
+        buttons.replaceChildren();
+        const textOnly=makeButton('बिना फोटो बनाएँ','#1877f2');
+        const withPhoto=makeButton('फोटो चुनें','#e4e6eb');
+        const back=makeButton('वापस','#e4e6eb');
+        buttons.append(textOnly,withPhoto,back); panel.insertBefore(photoHelp,buttons);
+        textOnly.addEventListener('click',()=>{ overlay.remove(); finishStory(text,''); });
+        back.addEventListener('click',()=>{ photoHelp.remove(); caption.style.display='block'; help.textContent='स्टोरी में क्या लिखना चाहते हैं?'; buttons.replaceChildren(cancel,next); });
+        withPhoto.addEventListener('click',()=>{
+          overlay.remove(); const fileInput=$('storyFile'); fileInput.value='';
+          fileInput.onchange=async()=>{ const file=fileInput.files && fileInput.files[0]; if(!file){fileInput.onchange=null;return;} try{ const image=await readImage(file); finishStory(text,image); } catch(error){ alert(error.message||'फोटो नहीं खुली।'); } fileInput.onchange=null; };
+          fileInput.click();
+        });
+      });
+      caption.focus();
+    }
+    function finishStory(caption, image) {
+      stories.unshift({
+        id: nextStoryId++, name: profileName, avatar: currentAvatar(),
+        caption: caption.trim(), image,
+        color: ['linear-gradient(145deg,#1877f2,#7c4dff)','linear-gradient(145deg,#ec4899,#f97316)','linear-gradient(145deg,#059669,#0ea5e9)'][nextStoryId % 3],
+        createdAt: Date.now()
+      });
+      renderStories();
+      saveApp();
+      openStory(0);
+    }
+    $('addStoryTile').addEventListener('click', createStory);
+
+    function openStory(index) {
+      if (!stories.length) return;
+      currentStoryIndex = (index + stories.length) % stories.length;
+      const story = stories[currentStoryIndex];
+      $('storyStageName').textContent = story.name;
+      $('storyStageAvatar').src = story.avatar;
+      $('storyStageTime').textContent = 'अभी-अभी';
+      $('storyStageCaption').textContent = story.caption;
+      const image = $('storyStageImage');
+      if (story.image) { image.src = story.image; image.classList.remove('hidden'); }
+      else { image.classList.add('hidden'); image.removeAttribute('src'); }
+      $('storyProgressFill').style.width = '100%';
+      $('storyViewer').classList.remove('hidden');
+    }
+    function closeStory() { $('storyViewer').classList.add('hidden'); }
+    $('closeStory').addEventListener('click', closeStory);
+    $('storyPrev').addEventListener('click', () => openStory(currentStoryIndex - 1));
+    $('storyNext').addEventListener('click', () => openStory(currentStoryIndex + 1));
+    $('storyViewer').addEventListener('click', (event) => {
+      if (event.target === $('storyViewer')) closeStory();
+    });
+    document.addEventListener('keydown', (event) => {
+      if ($('storyViewer').classList.contains('hidden')) return;
+      if (event.key === 'Escape') closeStory();
+      if (event.key === 'ArrowRight') openStory(currentStoryIndex + 1);
+      if (event.key === 'ArrowLeft') openStory(currentStoryIndex - 1);
+    });
+
+    function addComment(post, commentText) {
+      const wrap = document.createElement('div'); wrap.className = 'comment';
+      const name = document.createElement('div'); name.className = 'comment-name'; name.textContent = profileName;
+      const body = document.createElement('div'); body.textContent = commentText;
+      wrap.append(name, body); post.querySelector('.comment-list').appendChild(wrap);
+      const count = post.querySelector('.comment-count'); count.textContent = Number(count.textContent) + 1;
+      saveApp();
+    }
+
+    $('publishPost').addEventListener('click', async () => {
+      const text = $('postText').value.trim();
+      const file = $('postFile').files[0];
+      if (!text && !file) { alert('पहले कुछ लिखें या फोटो चुनें।'); return; }
+      try {
+        const photo = await readImage(file);
+        const post = document.createElement('article'); post.className = 'card'; post.dataset.postId = String(nextPostId++);
+        const head = document.createElement('div'); head.className = 'feed-head';
+        const avatar = document.createElement('img'); avatar.className = 'avatar small-avatar'; avatar.alt = ''; avatar.src = currentAvatar();
+        const details = document.createElement('div');
+        const author = document.createElement('div'); author.className = 'feed-name'; author.textContent = profileName;
+        const time = document.createElement('div'); time.className = 'feed-time'; time.textContent = 'अभी-अभी';
+        details.append(author, time); head.append(avatar, details); post.append(head);
+        if (text) { const body = document.createElement('div'); body.className = 'post-text'; body.textContent = text; post.append(body); }
+        if (photo) { const image = document.createElement('img'); image.className = 'post-photo'; image.alt = 'पोस्ट की फोटो'; image.src = photo; post.append(image); }
+        const stats = document.createElement('div'); stats.className = 'post-stats';
+        const likes = document.createElement('span'); likes.innerHTML = '👍 <span class="like-count">0</span> लाइक';
+        const comments = document.createElement('span'); comments.innerHTML = '<span class="comment-count">0</span> कमेंट';
+        stats.append(likes, comments);
+        const actions = document.createElement('div'); actions.className = 'post-actions';
+        const likeBtn = document.createElement('button'); likeBtn.className = 'btn action-btn'; likeBtn.textContent = '👍 Like';
+        let liked = false;
+        likeBtn.addEventListener('click', () => {
+          liked = !liked; const count = post.querySelector('.like-count');
+          count.textContent = Math.max(0, Number(count.textContent) + (liked ? 1 : -1));
+          likeBtn.classList.toggle('liked', liked); likeBtn.textContent = liked ? '👍 Liked' : '👍 Like';
+          saveApp();
+        });
+        const commentBtn = document.createElement('button'); commentBtn.className = 'btn action-btn'; commentBtn.textContent = '💬 Comment';
+        const shareBtn = document.createElement('button'); shareBtn.className = 'btn action-btn'; shareBtn.textContent = '↗ Share';
+        shareBtn.addEventListener('click', async () => {
+          const shareText = `${profileName} की पोस्ट: ${text}`;
+          try {
+            if (navigator.share) await navigator.share({title:'मेरा सोशल ऐप',text:shareText});
+            else if (navigator.clipboard) { await navigator.clipboard.writeText(shareText); alert('पोस्ट का टेक्स्ट कॉपी हो गया।'); }
+            else alert('इस ब्राउज़र में शेयर सुविधा उपलब्ध नहीं है।');
+          } catch (_) {}
+        });
+        actions.append(likeBtn, commentBtn, shareBtn);
+        const commentArea = document.createElement('div'); commentArea.className = 'comments hidden';
+        const commentList = document.createElement('div'); commentList.className = 'comment-list';
+        const form = document.createElement('form'); form.className = 'comment-form';
+        const input = document.createElement('input'); input.type = 'text'; input.maxLength = 500; input.placeholder = 'कमेंट लिखें...'; input.setAttribute('aria-label','कमेंट लिखें');
+        const send = document.createElement('button'); send.className = 'btn btn-primary'; send.type = 'submit'; send.textContent = 'भेजें';
+        form.append(input, send);
+        form.addEventListener('submit', (event) => { event.preventDefault(); const value = input.value.trim(); if (!value) return; addComment(post, value); input.value = ''; });
+        commentBtn.addEventListener('click', () => { commentArea.classList.toggle('hidden'); if (!commentArea.classList.contains('hidden')) input.focus(); });
+        commentArea.append(commentList, form);
+        const deleteRow = document.createElement('div'); deleteRow.className = 'button-row';
+        const deleteBtn = document.createElement('button'); deleteBtn.className = 'btn btn-light'; deleteBtn.textContent = '🗑️ पोस्ट हटाएँ';
+        deleteBtn.addEventListener('click', () => { if (confirm('क्या आप यह पोस्ट हटाना चाहते हैं?')) { post.remove(); if (!$('feed').querySelector('article')) $('emptyState').classList.remove('hidden'); saveApp(); } });
+        deleteRow.append(deleteBtn); post.append(stats, actions, commentArea, deleteRow);
+        $('emptyState').classList.add('hidden'); $('feed').prepend(post);
+        $('postText').value = ''; $('postFile').value = '';
+        saveApp();
+      } catch (error) { alert(error.message || 'पोस्ट नहीं बन सकी।'); }
+    });
+
+    restoreApp();
+  </script>
+</body>
+</html>
